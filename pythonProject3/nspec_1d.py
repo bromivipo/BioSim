@@ -225,11 +225,9 @@ class Poisson_1d:
             return
 
         spec_death_index = generate_random_index(self.grid.num_spec, self.grid.spec_sum_death_rate_in_all_cells)
-
         # generate dying specimen
         cell_death_index = generate_random_index(self.cell_count_x,
                                                  self.grid.spec_sum_death_rate_in_cell[:, spec_death_index])
-
         assert len(self.grid.cell_coords[cell_death_index][spec_death_index]) > 0
 
         if len(self.grid.cell_coords[cell_death_index][spec_death_index]) <= 0:
@@ -256,13 +254,16 @@ class Poisson_1d:
                         continue
 
                     interaction = self.dd[spec_death_index][spec] * self.death_spline[spec_death_index][spec](distance)
-
                     self.grid.spec_death_rates[cell][spec][coord] -= interaction
                     self.grid.spec_sum_death_rate_in_cell[cell][spec] -= interaction
                     self.grid.spec_sum_death_rate_in_all_cells[spec] -= interaction
                     self.grid.total_death_rate -= interaction
 
         self.grid.total_death_rate -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
+            in_cell_death_index]
+        self.grid.spec_sum_death_rate_in_cell[cell_death_index][spec_death_index] -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
+            in_cell_death_index]
+        self.grid.spec_sum_death_rate_in_all_cells[spec_death_index] -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
             in_cell_death_index]
 
         self.grid.spec_death_rates[cell_death_index][spec_death_index][in_cell_death_index], \
@@ -273,9 +274,6 @@ class Poisson_1d:
         self.grid.cell_coords[cell_death_index][spec_death_index][-1] = \
             self.grid.cell_coords[cell_death_index][spec_death_index][-1], \
             self.grid.cell_coords[cell_death_index][spec_death_index][in_cell_death_index]
-
-        self.grid.spec_sum_death_rate_in_cell[cell_death_index] -= self.d[spec_death_index]
-        self.grid.spec_sum_death_rate_in_all_cells[spec_death_index] -= self.d[spec_death_index]
 
         self.grid.spec_death_rates[cell_death_index][spec_death_index] = np.delete(
             self.grid.spec_death_rates[cell_death_index][spec_death_index], [-1])
@@ -325,11 +323,11 @@ class Poisson_1d:
         index_of_new_spec = len(self.grid.spec_death_rates[new_cell][spec_spawn_index]) - 1
 
         # recalculate death rates
-        for cell in range(new_cell - self.rad_in_cells, new_cell + self.rad_in_cells + 1):
-            if (not self.periodic) and (cell < 0 or cell >= self.cell_count_x):
-                continue
-            cell = self.grid.get_correct_index(cell)
-            for spec in range(self.num_spec):
+        for spec in range(self.num_spec):
+            for cell in range(new_cell - self.rad_in_cells[spec_spawn_index][spec], new_cell + self.rad_in_cells[spec_spawn_index][spec] + 1):
+                if (not self.periodic) and (cell < 0 or cell >= self.cell_count_x):
+                    continue
+                cell = self.grid.get_correct_index(cell)
                 for coord in range(len(self.grid.cell_coords[cell][spec])):
                     if new_cell == cell and spec == spec_spawn_index and coord == index_of_new_spec:
                         continue
@@ -351,7 +349,7 @@ class Poisson_1d:
                         self.grid.total_death_rate += interaction
                         self.grid.spec_sum_death_rate_in_all_cells[spec_spawn_index] += interaction
                         self.grid.spec_sum_death_rate_in_cell[new_cell][spec_spawn_index] += interaction
-                        self.grid.spec_death_rates[new_cell][spec_spawn_index][new_coord_x] += interaction
+                        self.grid.spec_death_rates[new_cell][spec_spawn_index][index_of_new_spec] += interaction
 
     def make_event(self):
         if self.grid.total_population.sum() == 0:
@@ -361,7 +359,7 @@ class Poisson_1d:
             scale=1. / np.array(
                 (self.grid.total_population * self.b + self.grid.spec_sum_death_rate_in_all_cells)).sum())
         born_probability = np.array(self.grid.total_population * self.b).sum() / np.array(
-            self.grid.total_population * self.b + self.grid.spec_sum_death_rate_in_cell).sum()
+            self.grid.total_population * self.b + self.grid.spec_sum_death_rate_in_all_cells).sum()
         if stats.bernoulli.rvs(born_probability) == 0:
             self.kill_random()
         else:
@@ -416,9 +414,9 @@ def test_sim1():
     plt.subplot(1, 2, 1)
     plt.title("зависимость популяции от времени")
     #plt.text(0, np.max(result[1]), "b = 1, d = 0, dd = 0.01, death_y = 1, birth_y = 0.2", fontsize=14.)
-    plt.plot(result[0], result[1][0])
+    plt.plot(result[0], result[:][0])
     plt.subplot(1, 2, 2)
-    plt.plot(result[0], result[1][1])
+    plt.plot(result[0], result[:][1])
     #plt.title("расселение по областям")
     #plt.bar(np.arange(1, len(result[3]) + 1), result[3])
 
