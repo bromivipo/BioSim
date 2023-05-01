@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ba0d8291-e240-49f3-a277-0db8963353fc" name="Changes" comment="" />
+    <list default="true" id="ba0d8291-e240-49f3-a277-0db8963353fc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pythonProject3/nspec_1d.py" beforeDir="false" afterPath="$PROJECT_DIR$/pythonProject3/nspec_1d.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +32,11 @@
       <option name="presentableId" value="Default" />
       <updated>1682957104495</updated>
       <workItem from="1682957106115" duration="3000" />
+      <workItem from="1682959704969" duration="703000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
 </project>

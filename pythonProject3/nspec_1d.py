@@ -13,7 +13,7 @@ def initialize_death_spline(death_y: np.array, death_cutoff_r: np.array):
         all_death_splines.append([])
         for j in range(len(death_cutoff_r[i])):
             death_grid = np.linspace(0, death_cutoff_r[i][j], len(death_y[i][j]))
-            all_death_splines[i].append(interpolate.CubicSpline(death_grid, death_y[i]))
+            all_death_splines[i].append(interpolate.CubicSpline(death_grid, death_y[i][j]))
     return all_death_splines
 
 
@@ -160,7 +160,7 @@ class Poisson_1d:
         self.death_spline = initialize_death_spline(death_y, death_cutoff_r)
         self.birth_ircdf_spline = initialize_ircdf_spline(birth_inverse_rcdf_y, birth_cutoff_r)
 
-        self.rad_in_cells = np.array(list(map(math.ceil, death_cutoff_r / (area_length_x / cell_count_x))))
+        self.rad_in_cells = np.array(list(map(math.ceil, death_cutoff_r.reshape(-1) / (area_length_x / cell_count_x)))).reshape((n, n))
         self.grid = Grid(n, cell_count_x, periodic, area_length_x)
 
         self.initialize()
