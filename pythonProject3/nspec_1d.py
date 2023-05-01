@@ -377,13 +377,13 @@ class Poisson_1d:
 def run_simulations(sim: Poisson_1d, iterations: int):
     assert iterations > 0
     time = [sim.time]
-    pop = [sim.grid.total_population]
+    pop = [deepcopy(sim.grid.total_population)]
 
     for i in range(1, iterations + 1):
         sim.run_events(1)
         if sim.realtime_limit_reached:
             break
-        pop.append(sim.grid.total_population)
+        pop.append(deepcopy(sim.grid.total_population))
         time.append(sim.time)
 
     return time, pop, sim.realtime_limit_reached
@@ -407,7 +407,7 @@ def test_sim1():
         death_cutoff_r=np.array([[3, 4], [2, 3]]),
         birth_cutoff_r=np.array([2, 2]),
         periodic=True,
-        realtime_limit=np.float_(60)
+        realtime_limit=np.float_(120)
     )
     result = run_simulations(sim, 10000)
     plt.figure(figsize=(15, 12))
