@@ -64,7 +64,6 @@ class Grid:
 
         self.periodic = periodic
         self.total_death_rate = 0
-        self.total_birth_rate = 0
         self.total_population = np.zeros(n, dtype=int)
         self.spec_sum_death_rate_in_all_cells = np.zeros(n, dtype=np.float64)
         self.spec_sum_death_rate_in_cell = np.zeros(shape=(cell_count_x, n), dtype=np.float64)
@@ -85,13 +84,13 @@ class Grid:
                 i -= self.cell_count_x
         return i
 
-    def get_death_rates(self, n_spec, i: int) -> np.array:
-        i = self.get_correct_index(i)
-        return self.spec_death_rates[i][n_spec]
+    # def get_death_rates(self, n_spec, i: int) -> np.array:
+    #    i = self.get_correct_index(i)
+    #    return self.spec_death_rates[i][n_spec]
 
-    def get_cell_coords(self, n_spec, i: int) -> np.array:
-        i = self.get_correct_index(i)
-        return self.cell_coords[i][n_spec]
+    # def get_cell_coords(self, n_spec, i: int) -> np.array:
+    #    i = self.get_correct_index(i)
+    #    return self.cell_coords[i][n_spec]
 
     # def get_all_coords(self) -> np.array:
     #     x_coords = np.array([], dtype=int)
@@ -186,7 +185,6 @@ class Poisson_1d:
                                                                 self.d[cur_spec])
             self.grid.spec_sum_death_rate_in_cell[i][cur_spec] += self.d[cur_spec]
             self.grid.total_death_rate += self.d[cur_spec]
-            self.grid.total_birth_rate += self.b[cur_spec]
             self.grid.total_population[cur_spec] += 1
             self.grid.spec_sum_death_rate_in_all_cells[cur_spec] += self.d[cur_spec]
             self.grid.cell_spec_population[i][cur_spec] += 1
@@ -197,9 +195,11 @@ class Poisson_1d:
                 for outer_coord_ind in range(len(self.grid.cell_coords[outer_cell][outer_spec])):
                     self.recalculate_death_rates(outer_cell, outer_spec, outer_coord_ind)
 
+
     def recalculate_death_rates(self, outer_cell: int, outer_spec: int, outer_coord_ind: int):
         for inner_spec in range(self.num_spec):
-            for inner_cell in range(outer_cell - self.rad_in_cells[outer_spec][inner_spec], outer_cell + self.rad_in_cells[outer_spec][inner_spec] + 1):
+            for inner_cell in range(outer_cell - self.rad_in_cells[outer_spec][inner_spec],
+                                    outer_cell + self.rad_in_cells[outer_spec][inner_spec] + 1):
                 if (not self.periodic) and (inner_cell < 0 or inner_cell >= self.cell_count_x):
                     continue
                 inner_cell = self.grid.get_correct_index(inner_cell)
@@ -215,10 +215,20 @@ class Poisson_1d:
 
                     interaction = self.dd[outer_spec][inner_spec] * self.death_spline[outer_spec][inner_spec](distance)
 
-                    self.grid.spec_sum_death_rate_in_cell[inner_cell][inner_spec] += interaction
-                    self.grid.spec_death_rates[inner_cell][inner_spec][inner_coord_ind] += interaction
                     self.grid.total_death_rate += interaction
                     self.grid.spec_sum_death_rate_in_all_cells[inner_spec] += interaction
+                    self.grid.spec_sum_death_rate_in_cell[inner_cell][inner_spec] += interaction
+                    self.grid.spec_death_rates[inner_cell][inner_spec][inner_coord_ind] += interaction
+
+    def approx(self, cell: int, spec: int, coord: int):
+        if abs(self.grid.spec_death_rates[cell][spec][coord]) < 1e-10:
+            self.grid.spec_death_rates[cell][spec][coord] = 0
+        if abs(self.grid.spec_sum_death_rate_in_cell[cell][spec]) < 1e-10:
+            self.grid.spec_sum_death_rate_in_cell[cell][spec] = 0
+        if abs(self.grid.spec_sum_death_rate_in_all_cells[spec]) < 1e-10:
+            self.grid.spec_sum_death_rate_in_all_cells[spec] = 0
+        if abs(self.grid.total_death_rate) < 1e-10:
+            self.grid.total_death_rate = 0
 
     def kill_random(self):
         if self.grid.total_population.sum() == 0:
@@ -232,6 +242,7 @@ class Poisson_1d:
 
         if len(self.grid.cell_coords[cell_death_index][spec_death_index]) <= 0:
             return
+
         in_cell_death_index = generate_random_index(
             len(self.grid.spec_death_rates[cell_death_index][spec_death_index]),
             self.grid.spec_death_rates[cell_death_index][spec_death_index]
@@ -239,7 +250,8 @@ class Poisson_1d:
 
         # recalculate death rates
         for spec in range(self.num_spec):
-            for cell in range(cell_death_index - self.rad_in_cells[spec_death_index][spec], cell_death_index + self.rad_in_cells[spec_death_index][spec] + 1):
+            for cell in range(cell_death_index - self.rad_in_cells[spec_death_index][spec],
+                              cell_death_index + self.rad_in_cells[spec_death_index][spec] + 1):
                 if (not self.periodic) and (cell < 0 or cell >= self.cell_count_x):
                     continue
                 cell = self.grid.get_correct_index(cell)
@@ -258,13 +270,17 @@ class Poisson_1d:
                     self.grid.spec_sum_death_rate_in_cell[cell][spec] -= interaction
                     self.grid.spec_sum_death_rate_in_all_cells[spec] -= interaction
                     self.grid.total_death_rate -= interaction
+                    self.approx(cell, spec, coord)
 
         self.grid.total_death_rate -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
             in_cell_death_index]
-        self.grid.spec_sum_death_rate_in_cell[cell_death_index][spec_death_index] -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
+        self.grid.spec_sum_death_rate_in_cell[cell_death_index][spec_death_index] -= \
+        self.grid.spec_death_rates[cell_death_index][spec_death_index][
             in_cell_death_index]
-        self.grid.spec_sum_death_rate_in_all_cells[spec_death_index] -= self.grid.spec_death_rates[cell_death_index][spec_death_index][
+        self.grid.spec_sum_death_rate_in_all_cells[spec_death_index] -= \
+        self.grid.spec_death_rates[cell_death_index][spec_death_index][
             in_cell_death_index]
+        self.approx(cell_death_index, spec_death_index, in_cell_death_index)
 
         self.grid.spec_death_rates[cell_death_index][spec_death_index][in_cell_death_index], \
         self.grid.spec_death_rates[cell_death_index][spec_death_index][-1] = \
@@ -322,9 +338,11 @@ class Poisson_1d:
 
         index_of_new_spec = len(self.grid.spec_death_rates[new_cell][spec_spawn_index]) - 1
 
+
         # recalculate death rates
         for spec in range(self.num_spec):
-            for cell in range(new_cell - self.rad_in_cells[spec_spawn_index][spec], new_cell + self.rad_in_cells[spec_spawn_index][spec] + 1):
+            for cell in range(new_cell - self.rad_in_cells[spec_spawn_index][spec],
+                              new_cell + self.rad_in_cells[spec_spawn_index][spec] + 1):
                 if (not self.periodic) and (cell < 0 or cell >= self.cell_count_x):
                     continue
                 cell = self.grid.get_correct_index(cell)
@@ -388,38 +406,59 @@ def run_simulations(sim: Poisson_1d, iterations: int):
 
     return time, pop, sim.realtime_limit_reached
 
+
 def test_sim1():
     death_grid = np.linspace(0.0, 5., num=1001)
     birth_grid = np.linspace(0.5, 1. - 1e-10, num=1001)
+    init_pop, init_spec = [], []
+    for i in range(100):
+        coord_in_cell = stats.randint.rvs(0, 600)
+        while (coord_in_cell in init_pop):
+            coord_in_cell = stats.randint.rvs(0, 600)
+        init_pop.append(coord_in_cell)
+        init_spec.append(0)
+    for i in range(200):
+        coord_in_cell = stats.randint.rvs(0, 600)
+        while (coord_in_cell in init_pop):
+            coord_in_cell = stats.randint.rvs(0, 600)
+        init_pop.append(coord_in_cell)
+        init_spec.append(1)
+
 
     sim = Poisson_1d(
         n=2,
-        area_length_x=np.float_(100.0),
-        dd=np.array([[0.01, 0.008], [0.01, 0.02]], dtype=np.float64),
-        cell_count_x=10,
-        b=np.array([0.8, 0.9], dtype=np.float64),
-        d=np.array([0.07, 0.08], dtype=np.float64),
-        initial_population_x=[11., 15., 20., 18.],
-        init_spec_x=[0, 1, 0, 1],
+        area_length_x=np.float_(600.0),
+        dd=np.array([[0.001, 0.001], [0.001, 0.001]], dtype=np.float64),
+        cell_count_x=60,
+        b=np.array([0.4, 0.4], dtype=np.float64),
+        d=np.array([0.2, 0.2], dtype=np.float64),
+        initial_population_x=init_pop,
+        init_spec_x=init_spec,
         seed=1234,
-        death_y=np.array([[stats.norm.pdf(death_grid, scale=1), stats.norm.pdf(death_grid, scale=1)], [stats.norm.pdf(death_grid, scale=1), stats.norm.pdf(death_grid, scale=1)]]),
-        birth_inverse_rcdf_y=np.array([stats.norm.ppf(birth_grid, scale=0.2), stats.norm.ppf(birth_grid, scale=0.2)]),
-        death_cutoff_r=np.array([[3, 4], [2, 3]]),
-        birth_cutoff_r=np.array([2, 2]),
+        death_y=np.array([[stats.norm.pdf(death_grid, scale=0.04), stats.norm.pdf(death_grid, scale=0.04)],
+                          [stats.norm.pdf(death_grid, scale=0.04), stats.norm.pdf(death_grid, scale=0.04)]]),
+        birth_inverse_rcdf_y=np.array([stats.norm.ppf(birth_grid, scale=0.04), stats.norm.ppf(birth_grid, scale=0.25)]),
+        death_cutoff_r=np.array([[3, 3], [3, 3]]),
+        birth_cutoff_r=np.array([3, 3]),
         periodic=True,
-        realtime_limit=np.float_(120)
+        realtime_limit=np.float_(300)
     )
-    result = run_simulations(sim, 10000)
-    plt.figure(figsize=(15, 12))
-    plt.subplot(1, 2, 1)
+    simulation_time, population, limit_reached = run_simulations(sim, 100000000)
+    plt.figure(figsize=(14, 12))
     plt.title("зависимость популяции от времени")
-    #plt.text(0, np.max(result[1]), "b = 1, d = 0, dd = 0.01, death_y = 1, birth_y = 0.2", fontsize=14.)
-    plt.plot(result[0], result[:][0])
-    plt.subplot(1, 2, 2)
-    plt.plot(result[0], result[:][1])
-    #plt.title("расселение по областям")
-    #plt.bar(np.arange(1, len(result[3]) + 1), result[3])
+    plt.text(0, np.max(population) * 0.95, "b = [0.4, 0.4], d = [0.2, 0.2], dd = [[0.001, 0.001], [0.001, 0.001]]", fontsize=14.)
+    plt.text(0, np.max(population) * 0.9, "$\sigma_m = (0.04, 0.06)$, $\sigma_w = [[0.12, 0.02], [0.02, 0.12]]$ ", fontsize=14.)
+    plt.plot(simulation_time, population)
+    plt.xlabel("время")
+    plt.ylabel("численность")
+    plt.legend(['N1', 'N2'])
+
+
+
+    # plt.title("расселение по областям")
+    # plt.bar(np.arange(1, len(result[3]) + 1), result[3])
 
     plt.show()
+
 
 test_sim1()
