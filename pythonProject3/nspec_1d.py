@@ -21,7 +21,7 @@ def initialize_death_spline(death_y: np.array, death_cutoff_r: np.array):
 def initialize_ircdf_spline(birth_ircdf_y: np.array, birth_cutoff_r: np.array):
     all_birth_splines = []
     for i in range(len(birth_ircdf_y)):
-        birth_ircdf_grid = np.linspace(0, birth_cutoff_r[i], len(birth_ircdf_y[i]))
+        birth_ircdf_grid = np.linspace(0. + 1e-10, 1- 1e-10, len(birth_ircdf_y[i]))
         all_birth_splines.append(interpolate.CubicSpline(birth_ircdf_grid, birth_ircdf_y[i]))
     return all_birth_splines
 
@@ -400,6 +400,8 @@ def run_simulations(sim: Poisson_1d, iterations: int):
         sim.run_events(1)
         if sim.realtime_limit_reached:
             break
+        if sim.grid.total_death_rate == 0:
+            break
         pop.append(deepcopy(sim.grid.total_population))
         time.append(sim.time)
 
@@ -407,54 +409,56 @@ def run_simulations(sim: Poisson_1d, iterations: int):
 
 
 def test_sim1():
-    death_grid = np.linspace(0.0, 10., num=1001)
+    death_grid = np.linspace(0.0, 5., num=1001)
     birth_grid = np.linspace(1e-10, 1. - 1e-10, num=1001)
     init_pop, init_spec = [], []
-    for i in range(200):
-        coord_in_cell = stats.uniform.rvs(0, 100)
-        while (coord_in_cell in init_pop):
-            coord_in_cell = stats.uniform.rvs(0, 100)
+    for i in range(100):
+        coord_in_cell = stats.uniform.rvs(0, 5)
         init_pop.append(coord_in_cell)
         init_spec.append(0)
-    for i in range(400):
-        coord_in_cell = stats.uniform.rvs(0, 100)
-        while (coord_in_cell in init_pop):
-            coord_in_cell = stats.uniform.rvs(0, 100)
+    for i in range(200):
+        coord_in_cell = stats.uniform.rvs(0, 5)
         init_pop.append(coord_in_cell)
         init_spec.append(1)
 
 
     sim = Poisson_1d(
         n=2,
-        area_length_x=np.float_(100),
-        dd=np.array([[0.01, 0.03], [0.01, 0.01]], dtype=np.float64),
+        area_length_x=np.float64(5),
+        dd=np.array([[0.001, 0.001], [0.001, 0.001]], dtype=np.float64),
         cell_count_x=10,
         b=np.array([0.4, 0.4], dtype=np.float64),
         d=np.array([0.2, 0.2], dtype=np.float64),
         initial_population_x=init_pop,
         init_spec_x=init_spec,
-        seed=43235541,
-        death_y=np.array([[stats.norm.pdf(death_grid, scale=0.04), stats.norm.pdf(death_grid, scale=0.04)],
-                          [stats.norm.pdf(death_grid, scale=0.04), stats.norm.pdf(death_grid, scale=0.04)]]),
-        birth_inverse_rcdf_y=np.array([stats.norm.ppf(birth_grid, scale=0.04), stats.norm.ppf(birth_grid, scale=0.05)]),
-        death_cutoff_r=np.array([[10, 10], [10, 10]]),
-        birth_cutoff_r=np.array([5, 10]),
+        seed=51222461,
+        death_y=np.array([[stats.norm.pdf(death_grid, scale=0.12), stats.norm.pdf(death_grid, scale=0.02)],
+                          [stats.norm.pdf(death_grid, scale=0.02), stats.norm.pdf(death_grid, scale=0.12)]]),
+        birth_inverse_rcdf_y=np.array([stats.norm.ppf(birth_grid, scale=0.04), stats.norm.ppf(birth_grid, scale=0.06)]),
+        death_cutoff_r=np.array([[5, 5], [5, 5]]),
+        birth_cutoff_r=np.array([1, 1]),
         periodic=True,
-        realtime_limit=np.float_(600)
+        realtime_limit=np.float_(7200)
     )
-    simulation_time, population, limit_reached, cell_spec_pop = run_simulations(sim, 1000000)
-    print(len(simulation_time))
+    simulation_time, population, limit_reached, cell_spec_pop = run_simulations(sim, 100000)
     plt.figure(figsize=(14, 12))
-    plt.subplot(1, 2, 1)
+    plt.subplot(2, 2, (1, 2))
     plt.title("зависимость популяции от времени")
-    plt.text(0, np.max(population) * 0.95, "b = [0.4, 0.4], d = [0.2, 0.2], dd = [[0.01, 0.01], [0.01, 0.01]]", fontsize=14.)
-    plt.text(0, np.max(population) * 0.9, "$\sigma_m = (0.04, 0.05)$, $\sigma_w = [[0.04, 0.04], [0.04, 0.04]]$ ", fontsize=14.)
-    plt.plot(simulation_time, population)
-    plt.xlabel("время")
+    plt.text(0, np.max(population) * 1.2, "b = [0.4, 0.4], d = [0.2, 0.2], dd = [[0.01, 0.01], [0.01, 0.01]]", fontsize=14.)
+    plt.text(0, np.max(population) * 1.15, "$\sigma_m = (0.04, 0.05)$, $\sigma_w = [[0.04, 0.04], [0.04, 0.04]]$ ", fontsize=14.)
+    plt.plot(np.arange(len(simulation_time)), population)
+    plt.xlabel("события")
     plt.ylabel("численность")
     plt.legend(['N1', 'N2'])
 
-    plt.subplot(1, 2, 2)
+    # plt.subplot(2, 2, 3)
+    # area = np.arange(sim.grid.cell_count_x)
+    # plt.bar(area, init_pop[0], label='N1', width=0.7)
+    # plt.bar(area, init_pop[1], bottom=init_pop[0], label='N2', width=0.7)
+    # plt.title("Стартовое расселение")
+    # plt.legend(loc="upper right")
+
+    plt.subplot(2, 2, (3, 4))
     area = np.arange(sim.grid.cell_count_x)
     plt.bar(area, cell_spec_pop[:, 0], label='N1', width=0.7)
     plt.bar(area, cell_spec_pop[:, 1], bottom=cell_spec_pop[:, 0], label='N2', width=0.7)
