@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ba0d8291-e240-49f3-a277-0db8963353fc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/pythonProject3/nspec_2d.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/100000iter.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/myplot.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,17 +22,26 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2PCNSW1Payu6DZIcWtCtFQj8Kku" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
-  <component name="RunManager" selected="Python.nspec_2d">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\ASUS\Documents\GitHub\BioSim" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.nspec_1d">
     <configuration name="nspec_1d" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="BioSim" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -98,7 +108,8 @@
       <workItem from="1682971116327" duration="80000" />
       <workItem from="1682980534196" duration="4710000" />
       <workItem from="1683045827281" duration="65000" />
-      <workItem from="1683200669614" duration="4952000" />
+      <workItem from="1683200669614" duration="6851000" />
+      <workItem from="1683233779334" duration="1146000" />
     </task>
     <task id="LOCAL-00001" summary="hot fix">
       <created>1682960446496</created>
@@ -142,23 +153,40 @@
       <option name="project" value="LOCAL" />
       <updated>1683200701753</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="cool graphics">
+      <created>1683213294800</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1683213294801</updated>
+    </task>
+    <task id="LOCAL-00008" summary="cool graphics in 1d">
+      <created>1683213368119</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1683213368119</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="hot fix" />
     <MESSAGE value="fixed some indexes" />
     <MESSAGE value="it shows plot, but..." />
     <MESSAGE value="finally it shows correct plot" />
     <MESSAGE value="fixed approximation" />
     <MESSAGE value="works 1d nspec" />
-    <option name="LAST_COMMIT_MESSAGE" value="works 1d nspec" />
+    <MESSAGE value="cool graphics" />
+    <MESSAGE value="cool graphics in 1d" />
+    <option name="LAST_COMMIT_MESSAGE" value="cool graphics in 1d" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BioSim$nspec_2d.coverage" NAME="nspec_2d Coverage Results" MODIFIED="1683213152908" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pythonProject3" />
-    <SUITE FILE_PATH="coverage/BioSim$nspec_1d.coverage" NAME="nspec_1d Coverage Results" MODIFIED="1683206116209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pythonProject3" />
+    <SUITE FILE_PATH="coverage/BioSim$nspec_2d.coverage" NAME="nspec_2d Coverage Results" MODIFIED="1683234087307" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pythonProject3" />
+    <SUITE FILE_PATH="coverage/BioSim$nspec_1d.coverage" NAME="nspec_1d Coverage Results" MODIFIED="1683234265492" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pythonProject3" />
   </component>
 </project>
